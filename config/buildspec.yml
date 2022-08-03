@@ -1,0 +1,32 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      python: 3.7
+    commands:
+      - echo Entered the install phase...
+      - echo Installing cfn-lint
+      - pip install cfn-lint
+  build:
+    commands:
+      - pwd
+      - printenv
+      - echo $CloudformationBucket
+      - echo $Environment
+      - echo $Path
+      - echo $test
+      - aws --version
+      - for f in $Path/*; do echo $f; aws cloudformation validate-template --output text --region $AWS_REGION --template-body file://$f; done
+      - cfn-lint -v
+      - cfn-lint -t $Path/* -r $AWS_REGION
+      - ls -la
+      - ls -la ./$Path
+  post_build:
+    commands:
+      - echo Entered the post_build phase...
+      - echo Build completed on `date`
+artifacts:
+  files:
+    - "**/*"
+  base-directory: $Path
+  name: $(AWS_REGION)-$(date +%Y-%m-%d)
